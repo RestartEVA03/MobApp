@@ -1,7 +1,7 @@
 import 'app_database.dart';
 
 class DatabaseProvider {
-  late AppDatabase? _database;
+  AppDatabase? _database;
 
   Future<AppDatabase> get database async {
     if (_database != null) return _database!;
