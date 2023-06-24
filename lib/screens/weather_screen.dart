@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../db/entity/weather_entity.dart';
 import '../repository/weather_repository.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 void main() {
   runApp(MyApp());
@@ -83,14 +84,23 @@ class _WeatherPageState extends State<WeatherPage> {
             );
           } else {
             return Center(
-              child: CircularProgressIndicator(), // Show loading
+              child: SpinKitCircle(
+                color: Theme.of(context).primaryColor,
+                size: 48.0,
+              ),
             );
           }
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: isReloading ? null : _refreshWeather, // Disable click while loading
-        child: isReloading ? CircularProgressIndicator() : Icon(Icons.refresh), // Show loading icon if isLoading is true
+        onPressed: isReloading ? null : _refreshWeather,
+        // Disable click while loading
+        child: isReloading
+            ? SpinKitCircle(
+                color: Colors.white,
+                size: 24.0,
+              )
+            : Icon(Icons.refresh), // Show loading icon if isLoading is true
       ),
     );
   }
