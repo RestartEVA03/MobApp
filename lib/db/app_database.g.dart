@@ -63,13 +63,15 @@ class _$AppDatabase extends AppDatabase {
 
   WeatherDao? _weatherDaoInstance;
 
+  QuestionDao? _questionDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 1,
+      version: 2,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -86,6 +88,8 @@ class _$AppDatabase extends AppDatabase {
       onCreate: (database, version) async {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Weather` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `locationName` TEXT NOT NULL, `temperature` REAL NOT NULL, `description` TEXT NOT NULL, `humidity` TEXT NOT NULL, `windSpeed` TEXT NOT NULL, `iconUrl` TEXT NOT NULL, `dateTime` INTEGER NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `Questions` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `answers` TEXT NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -96,6 +100,11 @@ class _$AppDatabase extends AppDatabase {
   @override
   WeatherDao get weatherDao {
     return _weatherDaoInstance ??= _$WeatherDao(database, changeListener);
+  }
+
+  @override
+  QuestionDao get questionDao {
+    return _questionDaoInstance ??= _$QuestionDao(database, changeListener);
   }
 }
 
@@ -140,5 +149,44 @@ class _$WeatherDao extends WeatherDao {
   }
 }
 
+class _$QuestionDao extends QuestionDao {
+  _$QuestionDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _questionEntityInsertionAdapter = InsertionAdapter(
+            database,
+            'Questions',
+            (QuestionEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'title': item.title,
+                  'answers': _questionConverter.encode(item.answers)
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<QuestionEntity> _questionEntityInsertionAdapter;
+
+  @override
+  Future<List<QuestionEntity>> getAllQuestions() async {
+    return _queryAdapter.queryList('SELECT * FROM Questions',
+        mapper: (Map<String, Object?> row) => QuestionEntity(
+            id: row['id'] as int,
+            title: row['title'] as String,
+            answers: _questionConverter.decode(row['answers'] as String)));
+  }
+
+  @override
+  Future<void> insertAllQuestions(List<QuestionEntity> questions) async {
+    await _questionEntityInsertionAdapter.insertList(
+        questions, OnConflictStrategy.replace);
+  }
+}
+
 // ignore_for_file: unused_element
+final _questionConverter = QuestionConverter();
 final _dateTimeConverter = DateTimeConverter();

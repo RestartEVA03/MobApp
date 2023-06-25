@@ -1,6 +1,6 @@
 import 'package:floor/floor.dart';
 
-import '../date_time_converter.dart';
+import '../converters/date_time_converter.dart';
 
 @Entity(tableName: 'Weather')
 class Weather {

@@ -1,14 +1,15 @@
 import 'package:flutter/foundation.dart';
 
-class Question{
+
+class Question {
   final int id;
   final String title;
-  final List<Map> answers;
+  final List<Map<String, dynamic>> answers;
 
   Question({
     required this.title,
     required this.answers,
-    required this.id,
+    required this.id
   });
 }
 

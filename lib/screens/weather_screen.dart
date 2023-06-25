@@ -70,7 +70,14 @@ class _WeatherPageState extends State<WeatherPage> {
                     '${weather.temperature}°C',
                     style: TextStyle(fontSize: 48),
                   ),
-                  Image.network(weather.iconUrl),
+                  Container(
+                    width: 200, // Set the desired width
+                    height: 200, // Set the desired height
+                    child: Image.network(
+                      weather.iconUrl,
+                      fit: BoxFit.cover, // Adjust the image's fit within the container
+                    ),
+                  ),
                   Text(
                     weather.description,
                     style: TextStyle(fontSize: 24),
