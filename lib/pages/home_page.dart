@@ -36,7 +36,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //appBar: AppBar(title: Text('Testing')),
+      appBar: AppBar(
+        title: Text('Quiz'),
+      ),
       body: SafeArea(
         child: DefaultTextStyle.merge(
           style: whiteTextStyle,
@@ -50,6 +52,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _questionIndex < 7
                     ?
