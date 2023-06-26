@@ -4,6 +4,7 @@ Our first flutter app
 
 ## You can:
 Get current weather in Vladivostok from OpenWeatherMap API
+
 Complete the quiz to get some music based on your current feelings
 
 ## We used:
