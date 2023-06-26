@@ -1,23 +1,10 @@
 import 'package:flutter/material.dart';
-
-import '../db/entity/weather_entity.dart';
-import '../repository/weather_repository.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:mobx/mobx.dart';
+import '../models/weather_store.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Weather App',
-      theme: ThemeData.dark(),
-      home: WeatherPage(),
-    );
-  }
-}
+final weatherStore = WeatherStore();
 
 class WeatherPage extends StatefulWidget {
   @override
@@ -25,16 +12,18 @@ class WeatherPage extends StatefulWidget {
 }
 
 class _WeatherPageState extends State<WeatherPage> {
-  final repository = WeatherRepository();
-  late Future<Weather> futureWeather;
-  bool isReloading = false; // Add a loading flag
+  final TextEditingController cityController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    futureWeather = Future.delayed(Duration(seconds: 1), () {
-      return repository.getWeather();
-    });
+    weatherStore.loadInitialWeather();
+  }
+
+  @override
+  void dispose() {
+    cityController.dispose();
+    super.dispose();
   }
 
   @override
@@ -43,92 +32,95 @@ class _WeatherPageState extends State<WeatherPage> {
       appBar: AppBar(
         title: Text('Weather'),
       ),
-      body: FutureBuilder<Weather>(
-        future: futureWeather,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text('Error: ${snapshot.error}'),
-                  ElevatedButton(
-                    onPressed: _refreshWeather,
-                    child: Text('Retry'),
-                  ),
-                ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                controller: cityController,
+                onChanged: weatherStore.setCityName,
+                decoration: InputDecoration(
+                  labelText: 'Enter City Name',
+                ),
               ),
-            );
-          } else if (snapshot.hasData) {
-            final weather = snapshot.data!;
+            ),
+            ElevatedButton(
+              onPressed: weatherStore.fetchWeatherByCity,
+              child: Text('Get Weather'),
+            ),
+            SizedBox(height: 16.0),
+            Observer(builder: (context) {
+              final futureWeather = weatherStore.futureWeather;
 
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '${weather.temperature}°C',
-                    style: TextStyle(fontSize: 48),
+              if (futureWeather.value == null) {
+                return Container();
+              } else if (futureWeather.status == FutureStatus.rejected) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text('Error: ${futureWeather.error}'),
+                      ElevatedButton(
+                        onPressed: weatherStore.refreshWeather,
+                        child: Text('Retry'),
+                      ),
+                    ],
                   ),
-                  Container(
-                    width: 200, // Set the desired width
-                    height: 200, // Set the desired height
-                    child: Image.network(
-                      weather.iconUrl,
-                      fit: BoxFit.cover, // Adjust the image's fit within the container
-                    ),
+                );
+              } else if (futureWeather.status == FutureStatus.pending) {
+                return Center(
+                  child: SpinKitCircle(
+                    color: Colors.white,
+                    size: 24.0,
                   ),
-                  Text(
-                    weather.description,
-                    style: TextStyle(fontSize: 24),
+                );
+              } else {
+                final weather = futureWeather.value!;
+
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${weather.temperature}°C',
+                        style: TextStyle(fontSize: 48),
+                      ),
+                      Container(
+                        width: 200,
+                        height: 200,
+                        child: Image.network(
+                          weather.iconUrl,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Text(
+                        weather.description,
+                        style: TextStyle(fontSize: 24),
+                      ),
+                      Text(
+                        weather.locationName,
+                        style: TextStyle(fontSize: 24),
+                      ),
+                    ],
                   ),
-                  Text(
-                    weather.locationName,
-                    style: TextStyle(fontSize: 24),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            return Center(
-              child: SpinKitCircle(
-                color: Theme.of(context).primaryColor,
-                size: 48.0,
-              ),
-            );
-          }
-        },
+                );
+              }
+            }),
+          ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: isReloading ? null : _refreshWeather,
-        // Disable click while loading
-        child: isReloading
-            ? SpinKitCircle(
-                color: Colors.white,
-                size: 24.0,
-              )
-            : Icon(Icons.refresh), // Show loading icon if isLoading is true
-      ),
+      floatingActionButton: Observer(builder: (context) {
+        return FloatingActionButton(
+          onPressed: weatherStore.isReloading ? null : weatherStore.refreshWeather,
+          child: weatherStore.isReloading
+              ? SpinKitCircle(
+            color: Colors.white,
+            size: 24.0,
+          )
+              : Icon(Icons.refresh),
+        );
+      }),
     );
-  }
-
-  void _refreshWeather() {
-    setState(() {
-      isReloading = true; // Set loading flag to true
-    });
-
-    futureWeather = Future.delayed(Duration(seconds: 1), () {
-      return repository.updateWeather();
-    });
-
-    futureWeather.then((weather) {
-      setState(() {
-        isReloading = false;
-      });
-    }).catchError((error) {
-      setState(() {
-        isReloading = false;
-      });
-    });
   }
 }
