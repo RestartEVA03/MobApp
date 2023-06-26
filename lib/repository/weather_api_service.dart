@@ -5,7 +5,7 @@ import '../api_constants.dart';
 import '../db/entity/weather_entity.dart';
 
 class ApiService {
-  static Future<Weather> fetchWeather() async {
+  static Future<Weather> fetchWeatherForCity(String city) async {
     final Uri uri = Uri.parse(
         'http://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&appid=$weatherApiKey'
     );
