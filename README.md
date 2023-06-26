@@ -1,16 +1,15 @@
-# first_proj
+# Flutter App
 
-A new Flutter project.
+Our first flutter app
 
-## Getting Started
+## You can:
+Get current weather in Vladivostok from OpenWeatherMap API
+Complete the quiz to get some music based on your current feelings
 
-This project is a starting point for a Flutter application.
+## We used:
+OpenWeatherMap API to get current weather details
+Floor database framework which uses SQLite as a database for storing weather and quiz
+Flutter spinkit for loading animations
+Stuctured files in the project (database provider, weather repository, etc.)
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Screenshots
