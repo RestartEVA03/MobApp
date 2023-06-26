@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:mobx/mobx.dart';
+import '../api_constants.dart';
 import '../models/weather_store.dart';
 
 final weatherStore = WeatherStore();
@@ -12,7 +13,7 @@ class WeatherPage extends StatefulWidget {
 }
 
 class _WeatherPageState extends State<WeatherPage> {
-  final TextEditingController cityController = TextEditingController();
+  final TextEditingController cityController = TextEditingController(text: city);
 
   @override
   void initState() {
